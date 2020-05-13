@@ -1,19 +1,25 @@
 import React, { Component } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, TabActions } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import * as firebase from "firebase/app";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import colors from "./assets/colors";
 
 import { firebaseConfig } from "./config/firebase";
 import WelcomeScreen from "./screens/WelcomeScreen";
 import HomeScreen from "./screens/HomeScreen";
 import LoginScreen from "./screens/LoginScreen";
 import SettingsScreen from "./screens/SettingsScreen";
+import BooksReadingScreen from "./screens/BooksReadingScreen";
+import BooksReadScreen from "./screens/BooksReadScreen";
 
 const Stack = createStackNavigator();
 
 const Drawer = createDrawerNavigator();
+
+const Tab = createBottomTabNavigator();
 
 const drawerOptions = {
   homeScreen: {
@@ -27,12 +33,46 @@ const drawerOptions = {
   welcomeScreen: { title: "" },
 };
 
+function HomeTabNavigator() {
+  return (
+    <Tab.Navigator
+      tabBarOptions={{
+        style: {
+          backgroundColor: colors.tabColor,
+        },
+        activeTintColor: colors.bgPrimary,
+        inactiveTintColor: colors.txtWhite,
+        tabStyle: {
+          justifyContent: "center",
+        },
+        labelStyle: { fontSize: 18 },
+      }}
+    >
+      <Tab.Screen
+        name="Books"
+        component={HomeScreen}
+        options={{ tabBarLabel: "Total" }}
+      />
+      <Tab.Screen
+        name="BooksReading"
+        component={BooksReadingScreen}
+        options={{ tabBarLabel: "Reading" }}
+      />
+      <Tab.Screen
+        name="BooksRead"
+        component={BooksReadScreen}
+        options={{ tabBarLabel: "Read" }}
+      />
+    </Tab.Navigator>
+  );
+}
+
 function MyDrawer() {
   return (
     <Drawer.Navigator>
       <Drawer.Screen
         name="Home"
-        component={HomeScreen}
+        component={HomeTabNavigator}
         options={drawerOptions.homeScreen}
       />
       <Drawer.Screen
@@ -51,7 +91,7 @@ function MyDrawer() {
 
 function MyStack() {
   return (
-    <Stack.Navigator headerMode="none" mode="modal">
+    <Stack.Navigator headerMode="none">
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />

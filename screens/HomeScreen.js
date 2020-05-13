@@ -9,17 +9,19 @@ import { snapshotToArray } from "../helpers/firebaseHelpers";
 import BookCount from "../components/BookCount";
 import CustomActionButton from "../components/CustomActionButton";
 import BookList from "../components/BookList";
+import CustomHeader from "../components/CustomHeader";
 
 class HomeScreen extends React.Component {
   state = {
     totalCount: 0,
-    isAddNewBookVisible: false,
     textInputData: "",
     books: [],
     booksReading: [],
     booksRead: [],
     currentUser: {},
   };
+
+  textInputRef = null;
 
   componentDidMount = async () => {
     await this.loadUserData();
@@ -50,15 +52,10 @@ class HomeScreen extends React.Component {
     });
   };
 
-  showAddNewBook = () => {
-    this.setState({ isAddNewBookVisible: true });
-  };
-
-  hideAddNewBook = () => {
-    this.setState({ isAddNewBookVisible: false });
-  };
-
   addBook = async (book) => {
+    // Set input empty after adding book
+    this.setState({ textInputData: "" });
+    this.textInputRef.setNativeProps({ text: "" });
     try {
       const { currentUser } = this.state;
       // check book exist
@@ -81,9 +78,12 @@ class HomeScreen extends React.Component {
           .set({ name: book, read: false });
 
         this.setState((prevState) => ({
-          books: [...prevState.books, book],
-          booksReading: [...prevState.booksReading, book],
-          isAddNewBookVisible: false,
+          books: [...prevState.books, { name: book, read: false }],
+          booksReading: [
+            ...prevState.booksReading,
+            { name: book, read: false },
+          ],
+          totalCount: this.state.totalCount + 1,
         }));
       }
     } catch (error) {
@@ -145,7 +145,6 @@ class HomeScreen extends React.Component {
   render() {
     const {
       totalCount,
-      isAddNewBookVisible,
       textInputData,
       books,
       booksReading,
@@ -154,34 +153,25 @@ class HomeScreen extends React.Component {
     return (
       <View style={styles.container}>
         {/* Header */}
-        <View style={styles.header}>
+        <CustomHeader navigation={this.props.navigation}>
           <Text style={styles.headerTitle}>Book Worm</Text>
-        </View>
+        </CustomHeader>
         {/* Body */}
         <View style={styles.container}>
           {/* Add Book Form */}
-          {isAddNewBookVisible && (
-            <View style={styles.bookFormContainer}>
-              <TextInput
-                style={styles.textInput}
-                placeholder="Enter Book Name"
-                placeholderTextColor="grey"
-                onChangeText={(text) => this.setState({ textInputData: text })}
-              />
-              <CustomActionButton
-                onPress={() => this.addBook(textInputData)}
-                style={styles.addBookButton}
-              >
-                <Ionicons name="ios-checkmark" color="white" size={40} />
-              </CustomActionButton>
-              <CustomActionButton
-                onPress={this.hideAddNewBook}
-                style={styles.hideAdddNewBookButton}
-              >
-                <Ionicons name="ios-close" color="white" size={40} />
-              </CustomActionButton>
-            </View>
-          )}
+
+          <View style={styles.bookFormContainer}>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Enter Book Name"
+              placeholderTextColor="grey"
+              onChangeText={(text) => this.setState({ textInputData: text })}
+              ref={(component) => {
+                this.textInputRef = component;
+              }}
+            />
+          </View>
+
           {/* Book List */}
           <FlatList
             data={books}
@@ -197,22 +187,15 @@ class HomeScreen extends React.Component {
           />
 
           {/* Add Button */}
-          <CustomActionButton
-            onPress={this.showAddNewBook}
-            style={styles.showAddNewBookButton}
-            position="right"
-          >
-            <Text style={styles.addNewBookButtonText}>+</Text>
-          </CustomActionButton>
-        </View>
-        {/* Footer */}
-        <View style={styles.footer}>
-          <BookCount title="Total" count={totalCount} />
-          <BookCount
-            title="Reading"
-            count={booksReading && booksReading.length}
-          />
-          <BookCount title="Read" count={booksRead && booksRead.length} />
+          {textInputData.length > 0 && (
+            <CustomActionButton
+              onPress={() => this.addBook(textInputData)}
+              style={styles.showAddNewBookButton}
+              position="right"
+            >
+              <Text style={styles.addNewBookButtonText}>+</Text>
+            </CustomActionButton>
+          )}
         </View>
       </View>
     );

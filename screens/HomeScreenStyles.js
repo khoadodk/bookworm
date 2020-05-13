@@ -5,17 +5,9 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    height: 70,
-    borderBottomWidth: 0.5,
-    borderBottomColor: colors.borderColor,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  headerTitle: { fontSize: 24 },
+  headerTitle: { fontSize: 24, color: colors.txtWhite },
   bookFormContainer: { height: 50, flexDirection: "row", marginBottom: 5 },
   // Book list
-
   renderBooksMarkAsReadText: { fontWeight: "bold", color: "white" },
   renderBookReadIcon: {
     width: 100,
@@ -25,7 +17,12 @@ export const styles = StyleSheet.create({
   },
 
   // End of book list
-  textInput: { flex: 1, backgroundColor: colors.bgTextInput, paddingLeft: 5 },
+  textInput: {
+    flex: 1,
+    backgroundColor: colors.bgTextInput,
+    paddingLeft: 5,
+    fontSize: 20,
+  },
   listEmptyComponent: { marginTop: 50, alignItems: "center" },
   listEmptyComponentText: { fontWeight: "bold" },
   addNewBookButtonText: { fontSize: 30, color: colors.bgSuccess },

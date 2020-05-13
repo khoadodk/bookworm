@@ -8,6 +8,7 @@ const colors = {
   borderColor: "#E9e9e9",
   txtWhite: "white",
   txtBlack: "black",
+  tabColor: "#405d67",
 };
 
 export default colors;

@@ -34,7 +34,7 @@ class WelcomeScreen extends Component {
               marginBottom: 10,
             }}
           >
-            <Text style={{ fontWeight: "100", fontSize: 20 }}>Log In</Text>
+            <Text style={{ fontWeight: "100", fontSize: 20 }}>Welcome</Text>
           </CustomActionButton>
         </View>
       </View>
