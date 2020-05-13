@@ -1,12 +1,14 @@
-import React from "react";
+import React, { Component } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
+import * as firebase from "firebase/app";
 
-import WelcomeScreen from "./screens/AppSwitchNavigator/WelcomeScreen";
+import { firebaseConfig } from "./config/firebase";
+import WelcomeScreen from "./screens/WelcomeScreen";
 import HomeScreen from "./screens/HomeScreen";
-import SignUpScreen from "./screens/SignUpScreen";
+import LoginScreen from "./screens/LoginScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 
 const Stack = createStackNavigator();
@@ -49,21 +51,54 @@ function MyDrawer() {
 
 function MyStack() {
   return (
-    <Stack.Navigator headerMode="none">
+    <Stack.Navigator headerMode="none" mode="modal">
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
       <Stack.Screen name="Home" component={HomeScreen} />
-      <Stack.Screen name="SignUp" component={SignUpScreen} />
+      <Stack.Screen name="Login" component={LoginScreen} />
     </Stack.Navigator>
   );
 }
 
-const App = () => {
-  const isSignedIn = false;
-  return (
-    <NavigationContainer>
-      {isSignedIn ? <MyStack /> : <MyDrawer />}
-    </NavigationContainer>
-  );
-};
+class App extends React.Component {
+  constructor() {
+    super();
+    this.initializeFirebase();
+    this.state = {
+      isLoggedIn: false,
+    };
+  }
+
+  initializeFirebase = () => {
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  };
+
+  componentDidMount() {
+    this.checkLoggedInUser();
+  }
+
+  checkLoggedInUser = () => {
+    this.unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        this.setState({ isLoggedIn: true });
+      } else {
+        this.setState({ isLoggedIn: false });
+      }
+    });
+  };
+
+  componentWillUnmount() {
+    this.unsubscribe();
+  }
+
+  render() {
+    const { isLoggedIn } = this.state;
+    console.log("isLoggedIn", isLoggedIn);
+    return (
+      <NavigationContainer>
+        {isLoggedIn ? <MyDrawer /> : <MyStack />}
+      </NavigationContainer>
+    );
+  }
+}
 
 export default App;

@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import colors from "../../assets/colors";
-import CustomActionButton from "../../components/CustomActionButton";
+import colors from "../assets/colors";
+import CustomActionButton from "../components/CustomActionButton";
 
 class WelcomeScreen extends Component {
   render() {
@@ -26,28 +26,15 @@ class WelcomeScreen extends Component {
         >
           <CustomActionButton
             title="Log in"
-            onPress={() => this.props.navigation.navigate("Home")}
+            onPress={() => this.props.navigation.navigate("Login")}
             style={{
               width: 200,
-              backgroundColor: "transparent",
-              borderColor: colors.bgPrimary,
-              borderWidth: 0.5,
+              backgroundColor: colors.bgTextInput,
+              borderWidth: 1,
               marginBottom: 10,
             }}
           >
             <Text style={{ fontWeight: "100", fontSize: 20 }}>Log In</Text>
-          </CustomActionButton>
-          <CustomActionButton
-            title="Sign up"
-            onPress={() => this.props.navigation.navigate("SignUp")}
-            style={{
-              width: 200,
-              backgroundColor: "transparent",
-              borderColor: colors.bgError,
-              borderWidth: 0.5,
-            }}
-          >
-            <Text style={{ fontWeight: "100", fontSize: 20 }}>Sign Up</Text>
           </CustomActionButton>
         </View>
       </View>

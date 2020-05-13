@@ -13,14 +13,22 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
   headerTitle: { fontSize: 24 },
-  bookFormContainer: { height: 50, flexDirection: "row" },
-  renderBooksContainer: { height: 50, flexDirection: "row" },
-  renderBooksTitle: { flex: 1, justifyContent: "center", paddingLeft: 5 },
+  bookFormContainer: { height: 50, flexDirection: "row", marginBottom: 5 },
+  // Book list
+
   renderBooksMarkAsReadText: { fontWeight: "bold", color: "white" },
+  renderBookReadIcon: {
+    width: 100,
+    height: 70,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  // End of book list
   textInput: { flex: 1, backgroundColor: colors.bgTextInput, paddingLeft: 5 },
   listEmptyComponent: { marginTop: 50, alignItems: "center" },
   listEmptyComponentText: { fontWeight: "bold" },
-  addNewBookButtonText: { color: "green", fontSize: 30 },
+  addNewBookButtonText: { fontSize: 30, color: colors.bgSuccess },
   footer: {
     height: 70,
     borderTopWidth: 0.5,
@@ -33,5 +41,9 @@ export const styles = StyleSheet.create({
   markAsReadButton: { width: 100, backgroundColor: colors.bgSuccess },
   addBookButton: { backgroundColor: colors.bgSuccess },
   hideAdddNewBookButton: { backgroundColor: colors.bgError },
-  showAddNewBookButton: { backgroundColor: colors.bgPrimary, borderRadius: 25 },
+  showAddNewBookButton: {
+    backgroundColor: colors.txtWhite,
+    borderRadius: 25,
+    borderWidth: 0.2,
+  },
 });
