@@ -25,14 +25,14 @@ const BooksReadingScreen = ({ books, navigation }) => {
       {books.isLoading && <Loading />}
       <View style={styles.container}>
         <CustomHeader navigation={navigation}>
-          <Text style={styles.headerTitle}>Book Worm</Text>
+          <Text style={styles.headerTitle}>Reading Books</Text>
         </CustomHeader>
         <FlatList
           data={books.booksReading}
           renderItem={({ item }, index) => renderBooks(item)}
           keyExtractor={(item, index) => index.toString()}
           ListEmptyComponent={
-            !books.isLoading && <ListEmpty text="Not Reading Any Book." />
+            !books.isLoading && <ListEmpty text="Not Reading Any Books." />
           }
         />
       </View>

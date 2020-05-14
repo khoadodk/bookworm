@@ -34,6 +34,31 @@ export const booksReducer = (state = initialState, action) => {
           (book) => book.name !== action.payload.name
         ),
       };
+    case "MARK_BOOK_AS_UNREAD":
+      return {
+        ...state,
+        books: state.books.map((book) => {
+          if (book.name === action.payload.name) {
+            return { ...book, read: false };
+          }
+          return book;
+        }),
+        booksRead: state.booksRead.filter(
+          (book) => book.name !== action.payload.name
+        ),
+        booksReading: [...state.booksReading, action.payload],
+      };
+    case "DELETE_BOOK":
+      return {
+        ...state,
+        books: state.books.filter((book) => book.name !== action.payload.name),
+        booksReading: state.booksReading.filter(
+          (book) => book.name !== action.payload.name
+        ),
+        booksRead: state.booksRead.filter(
+          (book) => book.name !== action.payload.name
+        ),
+      };
     case "IS_LOADING":
       return {
         ...state,

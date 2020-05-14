@@ -37,6 +37,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#deada5",
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 0.5,
+    borderRadius: 5,
   },
 });
 

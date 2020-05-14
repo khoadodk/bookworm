@@ -17,11 +17,11 @@ export default BookList;
 const styles = StyleSheet.create({
   renderBooksContainer: {
     flex: 1,
-    minHeight: 70,
+    minHeight: 60,
     flexDirection: "row",
     backgroundColor: colors.bgPrimary,
     alignItems: "center",
-    marginVertical: 5,
+    borderTopWidth: 0.5,
   },
   renderBooksTitle: {
     flex: 1,

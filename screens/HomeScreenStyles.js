@@ -2,11 +2,19 @@ import { StyleSheet } from "react-native";
 import colors from "../assets/colors";
 
 export const styles = StyleSheet.create({
+  flexRow: {
+    flexDirection: "row",
+  },
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   container: {
     flex: 1,
   },
-  headerTitle: { fontSize: 24, color: colors.txtWhite },
-  bookFormContainer: { height: 50, flexDirection: "row", marginBottom: 5 },
+  headerTitle: { fontSize: 24, color: colors.txtWhite, marginLeft: 10 },
+  bookFormContainer: { height: 60, flexDirection: "row" },
   // Book list
   renderBooksMarkAsReadText: { fontWeight: "bold", color: "white" },
   renderBookReadIcon: {
@@ -20,7 +28,7 @@ export const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     backgroundColor: colors.bgTextInput,
-    paddingLeft: 5,
+    paddingLeft: 10,
     fontSize: 20,
   },
   listEmptyComponent: { marginTop: 50, alignItems: "center" },

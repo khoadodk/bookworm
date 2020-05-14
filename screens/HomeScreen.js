@@ -6,6 +6,7 @@ import { styles } from "./HomeScreenStyles";
 import * as firebase from "firebase/app";
 import colors from "../assets/colors";
 import { connect } from "react-redux";
+import Swipeout from "react-native-swipeout";
 
 import { snapshotToArray } from "../helpers/firebaseHelpers";
 import CustomActionButton from "../components/CustomActionButton";
@@ -25,6 +26,11 @@ class HomeScreen extends React.Component {
   componentDidMount = async () => {
     await this.loadUserData();
   };
+
+  componentWillUnmount() {
+    const database = firebase.database().ref(this.state.currentUser.uid);
+    database.off();
+  }
 
   loadUserData = async () => {
     await firebase.auth().onAuthStateChanged(async (user) => {
@@ -94,8 +100,6 @@ class HomeScreen extends React.Component {
 
   markAsRead = async (selectedBook) => {
     try {
-      console.log(selectedBook);
-      console.log(this.props.books);
       this.props.isLoading(true);
       // update book read in firebase
       await firebase
@@ -105,29 +109,114 @@ class HomeScreen extends React.Component {
         .child(selectedBook.key)
         .update({ read: true });
       this.props.markBookAsRead(selectedBook);
-      his.props.isLoading(false);
+      this.props.isLoading(false);
     } catch (error) {
       console.log(error);
       this.props.isLoading(false);
     }
   };
 
-  renderBooks = (item) => (
-    <BookList item={item}>
-      {item.read ? (
-        <View style={styles.renderBookReadIcon}>
-          <Ionicons name="ios-checkmark" color={colors.bgSuccess} size={50} />
-        </View>
-      ) : (
-        <CustomActionButton
-          onPress={() => this.markAsRead(item)}
-          style={styles.markAsReadButton}
-        >
-          <Text style={styles.renderBooksMarkAsReadText}>Mark as Read</Text>
-        </CustomActionButton>
-      )}
-    </BookList>
-  );
+  markAsUnread = async (selectedBook) => {
+    try {
+      this.props.isLoading(true);
+      // update book read in firebase
+      await firebase
+        .database()
+        .ref("books")
+        .child(this.state.currentUser.uid)
+        .child(selectedBook.key)
+        .update({ read: false });
+      this.props.markBookAsUnRead(selectedBook);
+      this.props.isLoading(false);
+    } catch (error) {
+      console.log(error);
+      this.props.isLoading(false);
+    }
+  };
+
+  deleteBook = async (selectedBook) => {
+    try {
+      this.props.isLoading(true);
+      // update book read in firebase
+      await firebase
+        .database()
+        .ref("books")
+        .child(this.state.currentUser.uid)
+        .child(selectedBook.key)
+        .remove();
+      this.props.deleteBook(selectedBook);
+      this.props.isLoading(false);
+    } catch (error) {
+      console.log(error);
+      this.props.isLoading(false);
+    }
+  };
+
+  renderBooks = (item) => {
+    let swipeoutBtn = [
+      {
+        text: "Delete",
+        component: (
+          <View style={styles.center}>
+            <Ionicons name="ios-trash" size={24} color={colors.txtWhite} />
+          </View>
+        ),
+        backgroundColor: colors.btnDelete,
+        onPress: () => this.deleteBook(item),
+      },
+    ];
+    if (!item.read) {
+      swipeoutBtn.unshift({
+        text: "Mark Read",
+        component: (
+          <View style={styles.center}>
+            <View style={styles.center}>
+              <Text style={{ color: colors.txtWhite, fontSize: 16 }}>Mark</Text>
+              <Text style={{ color: colors.txtWhite, fontSize: 16 }}>Read</Text>
+            </View>
+          </View>
+        ),
+        backgroundColor: colors.bgSuccess,
+        onPress: () => this.markAsRead(item),
+      });
+    } else {
+      swipeoutBtn.unshift({
+        text: "Mark Read",
+        component: (
+          <View style={styles.center}>
+            <View style={styles.center}>
+              <Text style={{ color: colors.txtWhite, fontSize: 16 }}>Mark</Text>
+              <Text style={{ color: colors.txtWhite, fontSize: 16 }}>
+                Unread
+              </Text>
+            </View>
+          </View>
+        ),
+        backgroundColor: colors.bgWarning,
+        onPress: () => this.markAsUnread(item),
+      });
+    }
+
+    return (
+      <Swipeout
+        autoClose={true}
+        backgroundColor={colors.bgPrimary}
+        right={swipeoutBtn}
+      >
+        <BookList item={item}>
+          {item.read && (
+            <View style={styles.renderBookReadIcon}>
+              <Ionicons
+                name="ios-checkmark"
+                color={colors.bgSuccess}
+                size={50}
+              />
+            </View>
+          )}
+        </BookList>
+      </Swipeout>
+    );
+  };
 
   render() {
     const { textInputData } = this.state;
@@ -139,7 +228,14 @@ class HomeScreen extends React.Component {
 
           {/* Header */}
           <CustomHeader navigation={this.props.navigation}>
-            <Text style={styles.headerTitle}>Book Worm</Text>
+            <View style={[styles.center, styles.flexRow]}>
+              <Ionicons
+                name="ios-bookmarks"
+                size={50}
+                color={colors.txtWhite}
+              />
+              <Text style={styles.headerTitle}>Book Worm</Text>
+            </View>
           </CustomHeader>
           {/* Body */}
           <View style={styles.container}>
@@ -196,7 +292,10 @@ const mapDispatchToProps = (dispatch) => {
     addBook: (book) => dispatch({ type: "ADD_BOOK", payload: book }),
     markBookAsRead: (book) =>
       dispatch({ type: "MARK_BOOK_AS_READ", payload: book }),
+    markBookAsUnRead: (book) =>
+      dispatch({ type: "MARK_BOOK_AS_UNREAD", payload: book }),
     isLoading: (bool) => dispatch({ type: "IS_LOADING", payload: bool }),
+    deleteBook: (book) => dispatch({ type: "DELETE_BOOK", payload: book }),
   };
 };
 
