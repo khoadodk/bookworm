@@ -1,23 +1,22 @@
 import React from "react";
-import { Text, View, FlatList, TextInput, Image } from "react-native";
+import { Text, View, FlatList, TextInput } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "./HomeScreenStyles";
 import * as firebase from "firebase/app";
 import colors from "../assets/colors";
+import { connect } from "react-redux";
 
 import { snapshotToArray } from "../helpers/firebaseHelpers";
-import BookCount from "../components/BookCount";
 import CustomActionButton from "../components/CustomActionButton";
 import BookList from "../components/BookList";
 import CustomHeader from "../components/CustomHeader";
+import ListEmpty from "../components/ListEmpty";
+import Loading from "../components/Loading";
 
 class HomeScreen extends React.Component {
   state = {
-    totalCount: 0,
     textInputData: "",
-    books: [],
-    booksReading: [],
-    booksRead: [],
     currentUser: {},
   };
 
@@ -43,11 +42,10 @@ class HomeScreen extends React.Component {
         const booksArray = snapshotToArray(books);
         this.setState({
           currentUser: currentUserData.val(),
-          books: booksArray,
-          booksReading: booksArray.filter((book) => !book.read),
-          booksRead: booksArray.filter((book) => book.read),
-          totalCount: booksArray.length,
         });
+
+        this.props.loadBooks(booksArray);
+        this.props.isLoading(false);
       }
     });
   };
@@ -57,8 +55,10 @@ class HomeScreen extends React.Component {
     this.setState({ textInputData: "" });
     this.textInputRef.setNativeProps({ text: "" });
     try {
+      this.props.isLoading(true);
       const { currentUser } = this.state;
       // check book exist
+      // generate a key to the book (have to do it in order to mark as read)
       // store book in ref of userid
       const snapshot = await firebase
         .database()
@@ -70,29 +70,33 @@ class HomeScreen extends React.Component {
       if (snapshot.exists()) {
         alert(`The book with title of ${book} aleady exists. `);
       } else {
-        const response = await firebase
+        const key = await firebase
           .database()
           .ref("books")
           .child(currentUser.uid)
-          .push()
+          .push().key;
+
+        await firebase
+          .database()
+          .ref("books")
+          .child(currentUser.uid)
+          .child(key)
           .set({ name: book, read: false });
 
-        this.setState((prevState) => ({
-          books: [...prevState.books, { name: book, read: false }],
-          booksReading: [
-            ...prevState.booksReading,
-            { name: book, read: false },
-          ],
-          totalCount: this.state.totalCount + 1,
-        }));
+        this.props.addBook({ name: book, read: false, key });
+        this.props.isLoading(false);
       }
     } catch (error) {
       console.log(error);
+      this.props.isLoading(false);
     }
   };
 
   markAsRead = async (selectedBook) => {
     try {
+      console.log(selectedBook);
+      console.log(this.props.books);
+      this.props.isLoading(true);
       // update book read in firebase
       await firebase
         .database()
@@ -100,28 +104,11 @@ class HomeScreen extends React.Component {
         .child(this.state.currentUser.uid)
         .child(selectedBook.key)
         .update({ read: true });
-      // update state
-      let books = this.state.books.map((book) => {
-        if (book.name == selectedBook.name) {
-          return { ...book, read: true };
-        } else {
-          return book;
-        }
-      });
-
-      let booksReading = this.state.booksReading.filter(
-        (book) => book.name !== selectedBook.name
-      );
-      this.setState((prevState) => ({
-        books: books,
-        booksReading: booksReading,
-        booksRead: [
-          ...prevState.booksRead,
-          { name: selectedBook.name, read: true },
-        ],
-      }));
+      this.props.markBookAsRead(selectedBook);
+      his.props.isLoading(false);
     } catch (error) {
       console.log(error);
+      this.props.isLoading(false);
     }
   };
 
@@ -143,63 +130,74 @@ class HomeScreen extends React.Component {
   );
 
   render() {
-    const {
-      totalCount,
-      textInputData,
-      books,
-      booksReading,
-      booksRead,
-    } = this.state;
+    const { textInputData } = this.state;
+
     return (
-      <View style={styles.container}>
-        {/* Header */}
-        <CustomHeader navigation={this.props.navigation}>
-          <Text style={styles.headerTitle}>Book Worm</Text>
-        </CustomHeader>
-        {/* Body */}
+      <SafeAreaView style={styles.container}>
         <View style={styles.container}>
-          {/* Add Book Form */}
+          {this.props.books.isLoading && <Loading />}
 
-          <View style={styles.bookFormContainer}>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Enter Book Name"
-              placeholderTextColor="grey"
-              onChangeText={(text) => this.setState({ textInputData: text })}
-              ref={(component) => {
-                this.textInputRef = component;
-              }}
+          {/* Header */}
+          <CustomHeader navigation={this.props.navigation}>
+            <Text style={styles.headerTitle}>Book Worm</Text>
+          </CustomHeader>
+          {/* Body */}
+          <View style={styles.container}>
+            {/* Add Book Form */}
+            <View style={styles.bookFormContainer}>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Enter Book Name"
+                placeholderTextColor="grey"
+                onChangeText={(text) => this.setState({ textInputData: text })}
+                ref={(component) => {
+                  this.textInputRef = component;
+                }}
+              />
+            </View>
+            {/* Book List */}
+            <FlatList
+              data={this.props.books.books}
+              renderItem={({ item }, index) => this.renderBooks(item, index)}
+              keyExtractor={(item, index) => index.toString()}
+              ListEmptyComponent={
+                !this.props.books.isLoading && (
+                  <ListEmpty text="No Books. Please Add To The List." />
+                )
+              }
             />
+
+            {/* Add Button */}
+            {textInputData.length > 0 && (
+              <CustomActionButton
+                onPress={() => this.addBook(textInputData)}
+                style={styles.showAddNewBookButton}
+                position="right"
+              >
+                <Text style={styles.addNewBookButtonText}>+</Text>
+              </CustomActionButton>
+            )}
           </View>
-
-          {/* Book List */}
-          <FlatList
-            data={books}
-            renderItem={({ item }, index) => this.renderBooks(item, index)}
-            keyExtractor={(item, index) => index.toString()}
-            ListEmptyComponent={
-              <View style={styles.listEmptyComponent}>
-                <Text style={styles.listEmptyComponentText}>
-                  Not Reading Any Books.
-                </Text>
-              </View>
-            }
-          />
-
-          {/* Add Button */}
-          {textInputData.length > 0 && (
-            <CustomActionButton
-              onPress={() => this.addBook(textInputData)}
-              style={styles.showAddNewBookButton}
-              position="right"
-            >
-              <Text style={styles.addNewBookButtonText}>+</Text>
-            </CustomActionButton>
-          )}
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 }
 
-export default HomeScreen;
+const mapStateToProps = (state) => {
+  return {
+    books: state.books,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    loadBooks: (books) => dispatch({ type: "LOAD_BOOKS", payload: books }),
+    addBook: (book) => dispatch({ type: "ADD_BOOK", payload: book }),
+    markBookAsRead: (book) =>
+      dispatch({ type: "MARK_BOOK_AS_READ", payload: book }),
+    isLoading: (bool) => dispatch({ type: "IS_LOADING", payload: bool }),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);

@@ -1,19 +1,30 @@
-import React, { Component } from "react";
+import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import colors from "../assets/colors";
 
-const BookCount = ({ title, count }) => {
+const BookCount = ({ color, type, ...props }) => {
   return (
-    <View>
-      <Text style={{ fontSize: 20 }}>{title}</Text>
-      <Text style={{ textAlign: "center" }}>{count}</Text>
+    <View style={styles.container}>
+      <Text style={{ color: color || colors.txtWhite }}>
+        {props.books[type].length || 0}
+      </Text>
     </View>
   );
 };
 
-BookCount.propTypes = {
-  count: PropTypes.number.isRequired,
-  title: PropTypes.string.isRequired,
+const mapStateToProps = (state) => {
+  return {
+    books: state.books,
+  };
 };
 
-export default BookCount;
+export default connect(mapStateToProps)(BookCount);
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});

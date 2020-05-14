@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { NavigationContainer, TabActions } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -7,6 +7,9 @@ import * as firebase from "firebase/app";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import colors from "./assets/colors";
 
+import { Provider } from "react-redux";
+import store from "./redux/store";
+
 import { firebaseConfig } from "./config/firebase";
 import WelcomeScreen from "./screens/WelcomeScreen";
 import HomeScreen from "./screens/HomeScreen";
@@ -14,6 +17,8 @@ import LoginScreen from "./screens/LoginScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import BooksReadingScreen from "./screens/BooksReadingScreen";
 import BooksReadScreen from "./screens/BooksReadScreen";
+
+import BookCount from "./components/BookCount";
 
 const Stack = createStackNavigator();
 
@@ -51,17 +56,32 @@ function HomeTabNavigator() {
       <Tab.Screen
         name="Books"
         component={HomeScreen}
-        options={{ tabBarLabel: "Total" }}
+        options={{
+          tabBarLabel: "Total",
+          tabBarIcon: ({ tintColor }) => (
+            <BookCount color={tintColor} type="books" />
+          ),
+        }}
       />
       <Tab.Screen
         name="BooksReading"
         component={BooksReadingScreen}
-        options={{ tabBarLabel: "Reading" }}
+        options={{
+          tabBarLabel: "Reading",
+          tabBarIcon: ({ tintColor }) => (
+            <BookCount color={tintColor} type="booksReading" />
+          ),
+        }}
       />
       <Tab.Screen
         name="BooksRead"
         component={BooksReadScreen}
-        options={{ tabBarLabel: "Read" }}
+        options={{
+          tabBarLabel: "Read",
+          tabBarIcon: ({ tintColor }) => (
+            <BookCount color={tintColor} type="booksRead" />
+          ),
+        }}
       />
     </Tab.Navigator>
   );
@@ -134,9 +154,11 @@ class App extends React.Component {
     const { isLoggedIn } = this.state;
     console.log("isLoggedIn", isLoggedIn);
     return (
-      <NavigationContainer>
-        {isLoggedIn ? <MyDrawer /> : <MyStack />}
-      </NavigationContainer>
+      <Provider store={store}>
+        <NavigationContainer>
+          {isLoggedIn ? <MyDrawer /> : <MyStack />}
+        </NavigationContainer>
+      </Provider>
     );
   }
 }
