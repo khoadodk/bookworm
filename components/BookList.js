@@ -1,11 +1,16 @@
 import React from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import colors from "../assets/colors";
 
-const BookList = ({ children, item }) => {
+const BookList = ({ children, item, editable = false, onPress }) => {
   return (
     <View style={styles.renderBooksContainer}>
-      <Image source={require("../assets/icon.png")} style={styles.bookImage} />
+      <TouchableOpacity onPress={onPress} disabled={!editable}>
+        <Image
+          source={require("../assets/icon.png")}
+          style={styles.bookImage}
+        />
+      </TouchableOpacity>
       <Text style={styles.renderBooksTitle}>{item.name}</Text>
       {children}
     </View>

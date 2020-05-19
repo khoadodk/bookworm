@@ -6,8 +6,11 @@ import { styles } from "./HomeScreenStyles";
 import * as firebase from "firebase/app";
 import colors from "../assets/colors";
 import { connect } from "react-redux";
+import { compose } from "redux";
+import { connectActionSheet } from "@expo/react-native-action-sheet";
 import Swipeout from "react-native-swipeout";
 
+import { openImageLib, openCam } from "../helpers/imageHelpers";
 import { snapshotToArray } from "../helpers/firebaseHelpers";
 import CustomActionButton from "../components/CustomActionButton";
 import BookList from "../components/BookList";
@@ -152,6 +155,40 @@ class HomeScreen extends React.Component {
     }
   };
 
+  openImageLibrary = async (selectedBook) => {
+    const result = await openImageLib();
+    if (result) {
+      alert("image picked");
+    }
+  };
+
+  openCamera = async (selectedBook) => {
+    const result = await openCam();
+    if (result) {
+      alert("image picked");
+    }
+  };
+
+  addBookImage = (selectedBook) => {
+    // Same interface as https://facebook.github.io/react-native/docs/actionsheetios.html
+    const options = ["Select from Photos", "Camera", "Cancel"];
+    const cancelButtonIndex = 2;
+
+    this.props.showActionSheetWithOptions(
+      {
+        options,
+        cancelButtonIndex,
+      },
+      (buttonIndex) => {
+        if (buttonIndex === 0) {
+          this.openImageLibrary(selectedBook);
+        } else if (buttonIndex === 1) {
+          this.openCamera(selectedBook);
+        }
+      }
+    );
+  };
+
   renderBooks = (item) => {
     let swipeoutBtn = [
       {
@@ -203,7 +240,11 @@ class HomeScreen extends React.Component {
         backgroundColor={colors.bgPrimary}
         right={swipeoutBtn}
       >
-        <BookList item={item}>
+        <BookList
+          item={item}
+          editable={true}
+          onPress={() => this.addBookImage(item)}
+        >
           {item.read && (
             <View style={styles.renderBookReadIcon}>
               <Ionicons
@@ -299,4 +340,9 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);
+const wrapper = compose(
+  connect(mapStateToProps, mapDispatchToProps),
+  connectActionSheet
+);
+
+export default wrapper(HomeScreen);

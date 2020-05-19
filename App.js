@@ -5,6 +5,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import * as firebase from "firebase/app";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import colors from "./assets/colors";
 
 import { Provider } from "react-redux";
@@ -156,7 +157,9 @@ class App extends React.Component {
     return (
       <Provider store={store}>
         <NavigationContainer>
-          {isLoggedIn ? <MyDrawer /> : <MyStack />}
+          <ActionSheetProvider>
+            {isLoggedIn ? <MyDrawer /> : <MyStack />}
+          </ActionSheetProvider>
         </NavigationContainer>
       </Provider>
     );
