@@ -6,10 +6,14 @@ const BookList = ({ children, item, editable = false, onPress }) => {
   return (
     <View style={styles.renderBooksContainer}>
       <TouchableOpacity onPress={onPress} disabled={!editable}>
-        <Image
-          source={require("../assets/icon.png")}
-          style={styles.bookImage}
-        />
+        {item.image ? (
+          <Image source={{ uri: item.image }} style={styles.bookImage} />
+        ) : (
+          <Image
+            source={require("../assets/icon.png")}
+            style={styles.bookImage}
+          />
+        )}
       </TouchableOpacity>
       <Text style={styles.renderBooksTitle}>{item.name}</Text>
       {children}

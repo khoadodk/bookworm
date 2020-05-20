@@ -4,13 +4,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "./HomeScreenStyles";
 import * as firebase from "firebase/app";
+import "firebase/storage";
 import colors from "../assets/colors";
 import { connect } from "react-redux";
 import { compose } from "redux";
 import { connectActionSheet } from "@expo/react-native-action-sheet";
 import Swipeout from "react-native-swipeout";
 
-import { openImageLib, openCam } from "../helpers/imageHelpers";
+import { openImageLib, openCam, prepareBlob } from "../helpers/imageHelpers";
 import { snapshotToArray } from "../helpers/firebaseHelpers";
 import CustomActionButton from "../components/CustomActionButton";
 import BookList from "../components/BookList";
@@ -31,7 +32,7 @@ class HomeScreen extends React.Component {
   };
 
   componentWillUnmount() {
-    const database = firebase.database().ref(this.state.currentUser.uid);
+    const database = firebase.database().ref("books");
     database.off();
   }
 
@@ -155,17 +156,47 @@ class HomeScreen extends React.Component {
     }
   };
 
+  uploadImage = async (image, selectedBook) => {
+    const ref = firebase
+      .storage()
+      .ref("books")
+      .child(this.state.currentUser.uid)
+      .child(selectedBook.key);
+    try {
+      // convert to blob
+      const blob = await prepareBlob(image.uri);
+      const snapshot = await ref.put(blob);
+
+      let downloadUrl = await ref.getDownloadURL();
+      await firebase
+        .database()
+        .ref("books")
+        .child(this.state.currentUser.uid)
+        .child(selectedBook.key)
+        .update({ image: downloadUrl });
+      blob.close();
+      return downloadUrl;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   openImageLibrary = async (selectedBook) => {
     const result = await openImageLib();
     if (result) {
-      alert("image picked");
+      this.props.isLoading(true);
+      const downloadUrl = await this.uploadImage(result, selectedBook);
+      this.props.updateBookImage({ ...selectedBook, uri: downloadUrl });
+      this.props.isLoading(false);
     }
   };
 
   openCamera = async (selectedBook) => {
     const result = await openCam();
     if (result) {
-      alert("image picked");
+      const downloadUrl = await this.uploadImage(result, selectedBook);
+      this.props.updateBookImage({ ...selectedBook, uri: downloadUrl });
+      this.props.isLoading(false);
     }
   };
 
@@ -337,6 +368,8 @@ const mapDispatchToProps = (dispatch) => {
       dispatch({ type: "MARK_BOOK_AS_UNREAD", payload: book }),
     isLoading: (bool) => dispatch({ type: "IS_LOADING", payload: bool }),
     deleteBook: (book) => dispatch({ type: "DELETE_BOOK", payload: book }),
+    updateBookImage: (book) =>
+      dispatch({ type: "UPDATE_BOOK_IMAGE", payload: book }),
   };
 };
 

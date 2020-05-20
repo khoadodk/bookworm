@@ -31,7 +31,6 @@ class LoginScreen extends Component {
         if (response) {
           this.setState({ isLoading: false });
           // navigate user
-          console.log(response.user);
           this.props.navigation.navigate("Home", {
             user: response.user,
           });

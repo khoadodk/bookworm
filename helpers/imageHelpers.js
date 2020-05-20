@@ -34,3 +34,26 @@ export const openCam = async () => {
     return !result.cancelled ? result : false;
   }
 };
+
+// https://stackoverflow.com/questions/30008114/how-do-i-promisify-native-xhr
+export const prepareBlob = async (imageUri) => {
+  const blob = await new Promise((resolve, reject) => {
+    // set up new request
+    const xml = new XMLHttpRequest();
+    // resolve
+    xml.onload = function () {
+      resolve(xml.response);
+    };
+    // throw error
+    xml.onerror = function (e) {
+      console.log(e);
+      reject(new TypeError("Image Upload failed"));
+    };
+    // set response type to get the blob
+    xml.responseType = "blob";
+    xml.open("GET", imageUri, true);
+    // send request
+    xml.send();
+  });
+  return blob;
+};
